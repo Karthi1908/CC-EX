@@ -22,7 +22,7 @@ describe("CCNFT", function () {
       const { ccnft,owner, otherAccount } = await loadFixture(ccNFTFixture);
       console.log(owner.address);
       const oaddress = otherAccount.address
-      await ccnft.mintVillage(oaddress)
+      await ccnft.mintCarbonCredit(oaddress)
       const balance = await ccnft.balanceOf(oaddress,0)
       expect(1).to.equal(Number(balance.toString()));
       });

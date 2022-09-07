@@ -11,6 +11,7 @@ contract Certifier is Ownable {
     
     enum Status {Unassinged, Pending, Accepted, Rejected}
     uint applicationCount;
+   
 
     struct Application {
         uint applicationNumber;
@@ -20,6 +21,7 @@ contract Certifier is Ownable {
         string projectDetails;
         string location;
         Status applicationStatus;
+        uint creditsIssued;
     }
 
     mapping (address => bool) public Approvers;
@@ -52,7 +54,8 @@ contract Certifier is Ownable {
                                                _projectName,
                                                _projectDetails,
                                                _location,
-                                               Status.Unassinged);
+                                               Status.Unassinged,
+                                               0);
     }
 
     function assignApplication( string memory _projectName, address _certifier ) public {
@@ -63,15 +66,20 @@ contract Certifier is Ownable {
         Applications[_projectName].applicationStatus = Status.Pending;
     }
 
-    function applicationDecision(string memory _projectName, Status _status) public {
+    function applicationDecision(string memory _projectName, Status _status, uint _creditsIssued) public {
 
         require(Applications[_projectName].assignedTo == msg.sender , "Not the Assigned Certifier");
 
         Applications[_projectName].applicationStatus = _status;
 
         if(_status == Status.Accepted) {
-
-            ccNFT.mintCarbonCredit(Applications[_projectName].applicant);
+            
+            Applications[_projectName].creditsIssued = _creditsIssued;
+            ccNFT.mint('Vera', 
+                       Applications[_projectName].projectName,
+                       Applications[_projectName].location,
+                       _creditsIssued,
+                       Applications[_projectName].applicant);
 
         }
 

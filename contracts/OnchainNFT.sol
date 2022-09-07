@@ -15,6 +15,10 @@ contract onChainNFT is ERC721Enumerable, Ownable {
     struct Word {
         string name;
         string description;
+        string issuer;
+        string project;
+        string location;
+        string ccAmount;
         string bgHue;
         string textHue;
         string value;
@@ -22,18 +26,18 @@ contract onChainNFT is ERC721Enumerable, Ownable {
 
     //string[] public wordValues = ["accomplish", "accepted", "absolutely", "admire", "achievment", "active"];
 
-    constructor() ERC721("onChainNFT", "OCN") {}
+    constructor() ERC721("CC-EX", "Carbon") {}
 
     // public
-    function mint(string memory _userText) public payable {
+    function mint(string memory _userText, string memory _certifier,string memory _project, string memory _location , uint _quantity) public payable {
         uint256 supply = totalSupply();
         bytes memory strBytes = bytes(_userText);
         require(strBytes.length <= stringLimit, "String input exceeds limit.");
         require(exists(_userText) != true, "String already exists!");
 
         Word memory newWord = Word(
-            string(abi.encodePacked("NFT", uint256(supply + 1).toString())),
-            "This is our on-chain NFT",
+            string(abi.encodePacked("Carbon Credit - ", uint256(supply + 1).toString())),
+            "Carbon Credits generated at CC-EX Dapp ", _certifier, _project , _location , _quantity.toString(),
             randomNum(361, block.difficulty, supply).toString(),
             randomNum(361, block.timestamp, supply).toString(),
             _userText
@@ -86,18 +90,18 @@ contract onChainNFT is ERC721Enumerable, Ownable {
                         '<rect id="svg_11" height="600" width="503" y="0" x="0" fill="hsl(',
                         currentWord.bgHue,
                         ',50%,25%)"/>',
-                        '<text font-size="18" y="10%" x="5%" fill="hsl(',
+                        '<text font-size="18" y="20%" x="50%"  text-anchor="middle" fill="hsl(',
                         random,
-                        ',100%,80%)">Some Text</text>',
-                        '<text font-size="18" y="15%" x="5%" fill="hsl(',
+                        ',100%,80%)">The certifier</text>',
+                        '<text font-size="18" y="25%" x="50%" text-anchor="middle"  fill="hsl(',
                         random,
-                        ',100%,80%)">Some Text</text>',
-                        '<text font-size="18" y="20%" x="5%" fill="hsl(',
+                        ',100%,80%)">', currentWord.issuer, "</text>",
+                        '<text font-size="18" y="30%" x="50%" text-anchor="middle"  fill="hsl(',
                         random,
-                        ',100%,80%)">Some Text</text>',
-                        '<text font-size="18" y="10%" x="80%" fill="hsl(',
+                        ',100%,80%)">has issued </text>',
+                        '<text font-size="18" y="10%" x="50%"  text-anchor="middle" fill="hsl(',
                         random,
-                        ',100%,80%)">Token: ',
+                        ',100%,80%)">ID: ',
                         _tokenId.toString(),
                         "</text>",
                         '<text font-size="18" y="50%" x="50%" text-anchor="middle" fill="hsl(',
@@ -133,9 +137,21 @@ contract onChainNFT is ERC721Enumerable, Ownable {
                                 buildImage(_tokenId),
                                 '", "attributes": ',
                                 "[",
-                                '{"trait_type": "TextColor",',
+                                '{"trait_type": "Issued by",',
                                 '"value":"',
-                                currentWord.textHue,
+                                currentWord.issuer,
+                                '"},',
+                                '{"trait_type": "Project",',
+                                '"value":"',
+                                currentWord.project,
+                                '"},',
+                                '{"trait_type": "Location",',
+                                '"value":"',
+                                currentWord.location,
+                                '"},',
+                                '{"trait_type": "Carbon Credits",',
+                                '"value":"',
+                                currentWord.ccAmount,
                                 '"}',
                                 "]",
                                 "}"

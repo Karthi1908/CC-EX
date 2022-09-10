@@ -30,7 +30,7 @@ contract onChainNFT is ERC721Enumerable, Ownable {
 
     // public
     function mint(string memory _userText, string memory _certifier,string memory _project, string memory _location , uint _quantity) public payable {
-        uint256 supply = totalSupply();
+        uint256 supply = totalSupply() * 1000 + _quantity;
         bytes memory strBytes = bytes(_userText);
         require(strBytes.length <= stringLimit, "String input exceeds limit.");
         require(exists(_userText) != true, "String already exists!");

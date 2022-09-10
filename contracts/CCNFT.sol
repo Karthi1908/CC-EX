@@ -10,9 +10,8 @@ contract CCNFT is ERC721Enumerable, Ownable {
     using Strings for uint256;
     bool public paused = false;
     mapping(uint256 => Word) public wordsToTokenId;
-    uint256 public stringLimit = 45;
-    string _userText;
-
+   
+   
     struct Word {
         string name;
         string description;
@@ -22,7 +21,7 @@ contract CCNFT is ERC721Enumerable, Ownable {
         string ccAmount;
         string bgHue;
         string textHue;
-        string value;
+        
     }
 
     //string[] public wordValues = ["accomplish", "accepted", "absolutely", "admire", "achievment", "active"];
@@ -31,43 +30,21 @@ contract CCNFT is ERC721Enumerable, Ownable {
 
     // public
     function mint(string memory _certifier,string memory _project, string memory _location , uint _quantity, address _applicant) public payable {
-        uint256 supply = totalSupply();
-        
-       
-        _userText = string(abi.encodePacked(_quantity.toString(), "Carbon Credits")) ;
-        bytes memory strBytes = bytes(_userText);
-        require(strBytes.length <= stringLimit, "String input exceeds limit.");
+        uint256 supply = totalSupply() * 1000 + _quantity;    
 
         Word memory newWord = Word(
-            string(abi.encodePacked("Carbon Credit - ", uint256(supply + 1).toString())),
+            string(abi.encodePacked("Carbon Credit - ", uint256(supply).toString())),
             "Carbon Credits generated at CC-EX Dapp ", _certifier, _project , _location , _quantity.toString(),
             randomNum(361, block.difficulty, supply).toString(),
-            randomNum(361, block.timestamp, supply).toString(),
-            _userText
+            randomNum(361, block.timestamp, supply).toString()
         );
 
-        if (msg.sender != owner()) {
-            require(msg.value >= 0.005 ether);
-        }
 
-        wordsToTokenId[supply + 1] = newWord; //Add word to mapping @tokenId
-        _safeMint(_applicant, supply + 1);
+        wordsToTokenId[supply] = newWord; //Add word to mapping @tokenId
+        _safeMint(_applicant, supply);
     }
 
-    function exists(string memory _text) public view returns (bool) {
-        bool result = false;
-        //totalSupply function starts at 1, as does out wordToTokenId mapping
-        for (uint256 i = 1; i <= totalSupply(); i++) {
-            string memory text = wordsToTokenId[i].value;
-            if (
-                keccak256(abi.encodePacked(text)) ==
-                keccak256(abi.encodePacked(_text))
-            ) {
-                result = true;
-            }
-        }
-        return result;
-    }
+    
 
     function randomNum(
         uint256 _mod,
@@ -110,8 +87,11 @@ contract CCNFT is ERC721Enumerable, Ownable {
                         '<text font-size="18" y="50%" x="50%" text-anchor="middle" fill="hsl(',
                         random,
                         ',100%,80%)">',
-                        currentWord.value,
+                        currentWord.ccAmount,
                         "</text>",
+                        '<text font-size="18" y="60%" x="50%" text-anchor="middle"  fill="hsl(',
+                        random,
+                        ',100%,80%)">Carbon Credits </text>',
                         "</svg>"
                     )
                 )

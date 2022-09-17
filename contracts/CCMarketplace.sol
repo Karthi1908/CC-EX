@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './CCNFT.sol';
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 
 error ItemNotForSale(uint256 tokenId);
@@ -39,13 +40,11 @@ contract CCMarketplace is ReentrancyGuard, Ownable{
 
         uint creditQuantity = _tokenId % 1000;        
         creditDetails[_tokenId] = CCredits( msg.sender , creditQuantity);
-        ccNFT.safeTransferFrom(msg.sender, address(this), _tokenId);
+        ccNFT.transferFrom(msg.sender, address(this), _tokenId);
 
     }
+    
 
 
 
 }
-
-
-

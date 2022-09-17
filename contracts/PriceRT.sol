@@ -12,7 +12,7 @@ contract PriceRT is UsingTellor {
 
    
 
-  function getSpotPrice(string memory fst, string memory snd) internal view returns(uint256) {
+  function getSpotPrice(string memory fst, string memory snd) public view returns(uint256) {
 
 
     

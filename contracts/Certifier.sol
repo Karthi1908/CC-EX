@@ -103,7 +103,7 @@ contract Certifier is Ownable {
 
         IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
             EPNS_CHANNEL_ADDRESS, // from channel
-            address(this), // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send
+            EPNS_CHANNEL_ADDRESS, // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send
             bytes(
                 string(
                     // We are passing identity here: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations

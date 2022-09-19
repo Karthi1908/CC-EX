@@ -77,10 +77,16 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         uint256 carbonPrice = getPrice('kcca','usd');
         uint256 currencyRatePerUSD = getPrice(_currency, 'usd');
         uint256 amountToBePaid = carbonPrice * _quantity / currencyRatePerUSD;
+        creditDetails[_tokenId].quantity = creditDetails[_tokenId].quantity - _quantity;
+
         miniCC.mint(msg.sender, _tokenId, _quantity * 100, '');
 
     }
     
+    function buyForFixedAmount(uint256 amount, string memory _currency ,  uint256 _tokenId) external nonReentrant {
+
+        
+    }
 
 
 

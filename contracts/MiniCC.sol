@@ -11,7 +11,7 @@ contract MiniCC is ERC1155, ERC1155Burnable, Ownable, ERC1155Supply {
 
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
         public
-        onlyOwner
+        
     {
         _mint(account, id, amount, data);
     }

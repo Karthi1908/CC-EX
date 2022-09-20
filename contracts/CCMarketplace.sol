@@ -14,21 +14,17 @@ import "./MiniCC.sol";
 
 error ItemNotForSale(uint256 tokenId);
 error NotListed(uint256 tokenId);
-error AlreadyListed(address nftAddress, uint256 tokenId);
+error AlreadyListed(uint256 tokenId);
 error NoProceeds();
 error NotOwner();
 error NotApprovedForMarketplace();
 error PriceMustBeAboveZero();
 
-contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
-    
+contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{    
     
     CCNFT public ccNFT;
     PriceRT public priceRT;
     MiniCC public miniCC;
-    
-
-
 
     struct CCredits{
         address user;
@@ -38,6 +34,34 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
     mapping(uint256 => CCredits) public creditDetails;
     mapping(string => address) public supportedCurrencies;
+    mapping(address => mapping(string => uint)) public balances;
+
+    modifier notListed(uint256 tokenId)  {
+
+      address owner = ccNFT.ownerOf(tokenId);
+        if (owner == address(this)) {
+            revert AlreadyListed(tokenId);
+        }
+        _;
+    }
+
+    modifier isListed( uint256 tokenId) {
+        address owner = ccNFT.ownerOf(tokenId);
+        if (owner != address(this)) {
+            revert NotListed(tokenId);
+        }
+        _;
+    }
+
+    modifier isOwner(uint256 tokenId,   address spender ) {
+
+        address owner = ccNFT.ownerOf(tokenId);
+        if (spender != owner) {
+            revert NotOwner();
+        }
+        _;
+    }
+
 
     function addsupportedCurrencies(string memory _name, address _tokenContract) public onlyOwner {
         supportedCurrencies[_name] = _tokenContract;
@@ -64,28 +88,57 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
     }
 
 
-    function listCCNFT(uint256 _tokenId) external nonReentrant {
+    function listCCNFT(uint256 _tokenId) external nonReentrant notListed(_tokenId) isOwner(_tokenId, msg.sender) {
 
         uint creditQuantity = _tokenId % 1000;        
-        creditDetails[_tokenId] = CCredits( msg.sender , creditQuantity);
+        creditDetails[_tokenId] = CCredits( msg.sender , creditQuantity * 100); //1 Carbon credit = 100 Mini Carbon Credits
         ccNFT.safeTransferFrom(msg.sender, address(this), _tokenId);
 
     }
 
-    function buyFixedCC(uint256 _quantity, string memory _currency ,  uint256 _tokenId) external nonReentrant {
+    function buyFixedCC(uint256 _quantity, string memory _currency ,  uint256 _tokenId) external payable nonReentrant isListed(_tokenId) {
 
-        uint256 carbonPrice = getPrice('kcca','usd');
+        //quantity has 2 decimals
+        uint256 carbonPriceInUSD = getPrice('kcca','usd');
         uint256 currencyRatePerUSD = getPrice(_currency, 'usd');
-        uint256 amountToBePaid = carbonPrice * _quantity / currencyRatePerUSD;
+        uint256 amountToBePaid = carbonPriceInUSD * _quantity * 10000 / currencyRatePerUSD ; // accounting for 6 decimals (2 decimanls for quantity)
         creditDetails[_tokenId].quantity = creditDetails[_tokenId].quantity - _quantity;
+        balances[creditDetails[_tokenId].user][_currency] += amountToBePaid ;
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
 
-        miniCC.mint(msg.sender, _tokenId, _quantity * 100, '');
+        }
+
+
+        miniCC.mint(msg.sender, _tokenId, _quantity , '');
 
     }
-    
-    function buyForFixedAmount(uint256 amount, string memory _currency ,  uint256 _tokenId) external nonReentrant {
 
-        
+    function getBalanceOfToken(address _address, address _user) public view returns (unit) {
+        return ERC20(_address).balanceOf(_user);
+    }
+    
+    function buyForFixedAmount(uint256 _amount, string memory _currency ,  uint256 _tokenId) external payable nonReentrant isListed(_tokenId) {
+        //amount has 6 decimals
+
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+            require( msg.value  >= _amount , "Insufficient Amount");
+
+        } else {
+
+
+        }
+
+        uint256 carbonPriceInUSD = getPrice('kcca','usd');
+        uint256 currencyRatePerUSD = getPrice(_currency, 'usd');
+        uint256 miniCarbonQuantity = _amount * currencyRatePerUSD * 100 / carbonPriceInUSD / 1000000;
+        creditDetails[_tokenId].quantity = creditDetails[_tokenId].quantity - miniCarbonQuantity;
+        balances[creditDetails[_tokenId].user][_currency] += _amount;
+
+        miniCC.mint(msg.sender, _tokenId, miniCarbonQuantity, '');
+
+
+
+
     }
 
 

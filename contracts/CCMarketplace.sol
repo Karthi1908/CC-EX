@@ -125,6 +125,9 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         uint256 amountToBePaid = carbonPriceInUSD * _quantity * 10000 / currencyRatePerUSD ; // accounting for 6 decimals (2 decimanls for quantity)
         creditDetails[_tokenId].quantity = creditDetails[_tokenId].quantity - _quantity;
         balances[creditDetails[_tokenId].user][_currency] += amountToBePaid ;
+        
+        // assumption: contract will be deployed on Polygon network
+
         if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
 
             require( msg.value  >= amountToBePaid , "Insufficient Amount");
@@ -136,9 +139,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
         }
 
-
         miniCC.mint(msg.sender, _tokenId, _quantity , '');
-
         emit MiniCCMinted(msg.sender, _tokenId, _quantity, _currency, amountToBePaid);
 
     }
@@ -188,7 +189,8 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         } else {
 
             require(getBalanceOfToken(tokenList[_currency], address(this)) > _amount, "Not enough balance in contract");
-            IERC20(tokenList[_currency]).transferFrom(address(this), msg.sender, _amount);
+            
+            IERC20(tokenList[_currency]).transfer(msg.sender, _amount);
 
         }
 

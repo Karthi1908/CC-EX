@@ -2,7 +2,6 @@
 
 pragma solidity >=0.8.0;
 
-
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -63,6 +62,25 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         _;
     }
 
+    event CCListed(
+        address indexed seller,
+        uint256 indexed tokenId,
+        uint256 quantity
+    );
+
+    event MiniCCMinted(
+        address indexed minter,
+        uint256 indexed tokenId,
+        uint256 quantity,
+        string currency,
+        uint256 amount
+    );
+
+    event WithdrawProceeds(
+        address indexed user,
+        string indexed currency,
+        uint256 amount        
+    );
 
     function addsupportedCurrencies(string memory _name, address _tokenContract) public onlyOwner {
         tokenList[_name] = _tokenContract;
@@ -95,6 +113,8 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         creditDetails[_tokenId] = CCredits( msg.sender , creditQuantity * 100); //1 Carbon credit = 100 Mini Carbon Credits
         ccNFT.safeTransferFrom(msg.sender, address(this), _tokenId);
 
+        emit CCListed(msg.sender, _tokenId, creditQuantity * 100 );
+
     }
 
     function buyFixedCC(uint256 _quantity, string memory _currency ,  uint256 _tokenId) external payable nonReentrant isListed(_tokenId) {
@@ -107,10 +127,19 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         balances[creditDetails[_tokenId].user][_currency] += amountToBePaid ;
         if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
 
+            require( msg.value  >= amountToBePaid , "Insufficient Amount");
+
+        } else {
+
+            require(getBalanceOfToken(tokenList[_currency], msg.sender) > amountToBePaid);
+            IERC20(tokenList[_currency]).transferFrom(msg.sender, address(this), amountToBePaid);
+
         }
 
 
         miniCC.mint(msg.sender, _tokenId, _quantity , '');
+
+        emit MiniCCMinted(msg.sender, _tokenId, _quantity, _currency, amountToBePaid);
 
     }
 
@@ -135,17 +164,34 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
         } else {
 
-            require(getBalanceOfToken(tokenList[_currency], msg.sender) > _amount);
+            require(getBalanceOfToken(tokenList[_currency], msg.sender) > _amount, " Insufficent token balance");
             IERC20(tokenList[_currency]).transferFrom(msg.sender, address(this), _amount);
 
         }
 
-
-
-
+        emit MiniCCMinted(msg.sender, _tokenId, miniCarbonQuantity, _currency, _amount);
 
     }
 
+    function withdrawProceeds(string memory _currency, uint _amount) external nonReentrant {
 
+        require(balances[msg.sender][_currency] >= _amount, "Not enough balance for User");
+        balances[msg.sender][_currency] -= _amount;
+
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+
+            require(address(this).balance > _amount, "Not enough balance in contract");
+            
+            (bool success, ) = payable(msg.sender).call{value: _amount}("");
+            require(success, "Transfer failed");
+
+        } else {
+
+            require(getBalanceOfToken(tokenList[_currency], address(this)) > _amount, "Not enough balance in contract");
+            IERC20(tokenList[_currency]).transferFrom(address(this), msg.sender, _amount);
+
+        }
+
+    }
 
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import '@openzeppelin/contracts/access/Ownable.sol';
 import "@openzeppelin/contracts/utils/Strings.sol";
+import './IPublicLock.sol';
 import './CCNFT.sol';
 
 interface IPUSHCommInterface {
@@ -17,7 +18,10 @@ contract Certifier is Ownable {
 
     address public EPNS_COMM_ADDRESS = 0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa;
     address public EPNS_CHANNEL_ADDRESS = 0x7F36cba7Da4F7915bf5775cBF91f08F2F8f7b67a;
-    
+
+    IPublicLock public lock;
+
+        
     enum Status {Unassinged, Pending, Accepted, Rejected}
     uint applicationCount;
    
@@ -76,8 +80,14 @@ contract Certifier is Ownable {
     
     }
 
-    function addApprover(address _wallet, string memory _company) public onlyOwner {
-        Approvers[_wallet]= Certifiers(_company,true);
+    function setLockAddress(address _lockAddress) public  onlyOwner {
+        lock = IPublicLock(_lockAddress);
+    
+    }
+
+    function addApprover(string memory _company) public {
+        require(lock.balanceOf(msg.sender) > 0, 'Purchase a certifier membership first!');
+        Approvers[msg.sender]= Certifiers(_company,true);
     }
 
     function contains(address _wallet) public view returns (bool){
@@ -152,9 +162,54 @@ contract Certifier is Ownable {
                        Applications[_projectName].location,
                        _creditsIssued,
                        Applications[_projectName].applicant);
+            
+            IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
+            EPNS_CHANNEL_ADDRESS, // from channel
+            Applications[_projectName].applicant, // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send
+            bytes(
+                string(
+                    // We are passing identity here: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                    abi.encodePacked(
+                        "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                        "+", // segregator
+                        "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                        "+", // segregator
+                        "Application Approved", // this is notificaiton title
+                        "+", // segregator
+                        "Your Application for the project ", // notification body
+                        _projectName,
+                        " has been approved and awarded ",
+                        Strings.toString(_creditsIssued), // notification body
+                        " Congratulations" // notification body
+                    )
+                )
+            )
+        );
+                       
 
         } else {
             status = 'Rejected'; 
+            IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
+                EPNS_CHANNEL_ADDRESS, // from channel
+                Applications[_projectName].applicant, // to recipient, put address(this) in case you want Broadcast or Subset. For Targetted put the address to which you want to send
+                bytes(
+                    string(
+                    // We are passing identity here: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                        abi.encodePacked(
+                            "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                            "+", // segregator
+                            "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                            "+", // segregator
+                            "Application Declined", // this is notificaiton title
+                            "+", // segregator
+                            "Your Application for the project ", // notification body
+                            _projectName,
+                            " has been rejected. ",
+                            " Check the site for details" // notification body
+                        )
+                    )
+                )
+            );
         }
 
         emit ApplicationResult( Applications[_projectName].applicationNumber,

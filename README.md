@@ -1,13 +1,5 @@
-# Sample Hardhat Project
+# CC-EX
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+Carbob Credit Exhchange to promote sustainability by providing the fractionalized carbon credits as soul bound tokens to the retail customers at smaller denomintaion. 
 
-Try running some of the following tasks:
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```

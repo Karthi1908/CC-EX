@@ -4,6 +4,7 @@ pragma solidity >=0.8.0;
 
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/access/Ownable.sol';
 import './CCNFT.sol';
@@ -26,14 +27,14 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
     PriceRT public priceRT;
     MiniCC public miniCC;
 
-    struct CCredits{
+
+    struct CCredits{        
         address user;
         uint quantity;
-
     }
 
     mapping(uint256 => CCredits) public creditDetails;
-    mapping(string => address) public supportedCurrencies;
+    mapping(string => address) public tokenList;
     mapping(address => mapping(string => uint)) public balances;
 
     modifier notListed(uint256 tokenId)  {
@@ -64,7 +65,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
 
     function addsupportedCurrencies(string memory _name, address _tokenContract) public onlyOwner {
-        supportedCurrencies[_name] = _tokenContract;
+        tokenList[_name] = _tokenContract;
     }
 
     function setCCNFTAddress(address _ccNFTAddress) public  onlyOwner {
@@ -113,20 +114,13 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
     }
 
-    function getBalanceOfToken(address _address, address _user) public view returns (unit) {
-        return ERC20(_address).balanceOf(_user);
+    function getBalanceOfToken(address _address, address _user) public view returns (uint) {
+        return IERC20(_address).balanceOf(_user);
     }
     
     function buyForFixedAmount(uint256 _amount, string memory _currency ,  uint256 _tokenId) external payable nonReentrant isListed(_tokenId) {
         //amount has 6 decimals
 
-        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
-            require( msg.value  >= _amount , "Insufficient Amount");
-
-        } else {
-
-
-        }
 
         uint256 carbonPriceInUSD = getPrice('kcca','usd');
         uint256 currencyRatePerUSD = getPrice(_currency, 'usd');
@@ -135,6 +129,17 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         balances[creditDetails[_tokenId].user][_currency] += _amount;
 
         miniCC.mint(msg.sender, _tokenId, miniCarbonQuantity, '');
+        
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+            require( msg.value  >= _amount , "Insufficient Amount");
+
+        } else {
+
+            require(getBalanceOfToken(tokenList[_currency], msg.sender) > _amount);
+            IERC20(tokenList[_currency]).transferFrom(msg.sender, address(this), _amount);
+
+        }
+
 
 
 

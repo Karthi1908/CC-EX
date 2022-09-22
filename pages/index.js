@@ -1,9 +1,9 @@
 import Head from 'next/head'
-import React from 'react'
+import {React} from 'react'
 //import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useMoralisQuery } from "react-moralis"
-import { NFTBox } from "../components/NFTBox"
+import  NFTBox  from "../components/NFTBox"
 
 
 
@@ -29,6 +29,8 @@ export default function Home() {
             Token Id : {tokenId}.
             quantity : {quantity}.
             seller : {seller}.
+
+            <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} />
 
             
           </div>

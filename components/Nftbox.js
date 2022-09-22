@@ -5,12 +5,18 @@ import marketplaceabi from "../constants/CCMarketplace.json"
 import {Card, useNotification } from "web3uikit"
 import {ethers} from "ethers"
 import BuyNFT from "./BuyNFT"
+import contracts from "../constants/contracts.json"
 
 
 
 export default function NFTBox(props){
 
-    const nftaddr = ethers.utils.getAddress("0x8318E2B7F120F44FeA59A3394E9E5857FdAb16DE")
+    const { chainId, account } = useMoralis()
+    const chainString = chainId ? parseInt(chainId).toString() : "80001"
+    console.log(chainId , chainString)
+    const nftaddr = contracts[chainString].Nft[0]
+    const dispatch = useNotification()
+
     console.log(nftaddr)
 
     const[tokenId, setTokenId] = useState("")
@@ -22,15 +28,23 @@ export default function NFTBox(props){
     
 
     const {isWeb3Enabled} = useMoralis()
+    
+    const { runContractFunction } = useWeb3Contract()
 
-    const {runContractFunction : getTokenURI} = useWeb3Contract({
-        abi: nftabi,
-        contractAddress:nftaddr,
-        functionName: "tokenURI",
-        params: {
-            tokenId: props.tokenId,
+    async function getTokenURI(){
+
+        const URI = await runContractFunction({
+            abi: nftabi,
+            contractAddress:nftaddr,
+            functionName: "tokenURI",
+            params: {
+              tokenId: props.tokenId,
             },
-    })
+        })
+        console.log("URI", URI)
+        return URI
+
+   }
 
     
 
@@ -65,12 +79,15 @@ export default function NFTBox(props){
                     marketplaceAddress={marketAddress}
                     onClose={hideModal}                    
                 />
-                <Card title ={tokenId} onClick={handleCardClick}>
-                    <div>#{tokenId}</div>
-                    <div className="itlaic-text-sm"> {seller}</div>
-                    <div>Carbon Credit : {quantity}</div>
+                <div className="p-5">
+                    <div className="flex flex-col items-end gap-5"></div>
+                        <Card title ={tokenId} onClick={handleCardClick}>
+                            <div>#{tokenId}</div>
+                            <div className="itlaic-text-sm"> {seller}</div>
+                            <div>Carbon Credit : {quantity}</div>
                     
-                </Card>
+                        </Card>
+                </div>
             </div>
         </div>
     )

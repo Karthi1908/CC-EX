@@ -19,20 +19,23 @@ export default function Home() {
 
 
   return (
-    <div className={styles.container}>Listings
+    <div className="container mx-auto">
+        <h1 className="py-4 px-4 font-bold text-2xl">Listings</h1>
+            <div className="flex flex-wrap">
     
-    {FetchingccListings ? (<div> loading....  </div>) : ccListings.map((cc) => {
-        console.log(cc.attributes)
-        const {tokenId, quantity, seller, address} = cc.attributes
-        return (
-          <div> 
-             <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} marketAddress={address}/>
+                {FetchingccListings ? (<div> loading....  </div>) : ccListings.map((cc) => {
+                    console.log(cc.attributes)
+                    const {tokenId, quantity, seller, address} = cc.attributes
+                return (
+                      <div> 
+                        <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} marketAddress={address}/>
          
-          </div>
-        )
+                      </div>
+                  )
 
     })}
     
+    </div>
     </div>
     
   )

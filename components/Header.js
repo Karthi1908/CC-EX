@@ -12,8 +12,8 @@ export default function Header() {
             <Link href="/">
                 <a className="mr-4 p-6"> Home </a>
             </Link>
-            <Link href="/listCC">
-                <a className="mr-4 p-6"> List CC </a>
+            <Link href="/ccHolder">
+                <a className="mr-4 p-6">  CC Holder  </a>
             </Link>
             <ConnectButton moralisAuth={false}/>
         </div>

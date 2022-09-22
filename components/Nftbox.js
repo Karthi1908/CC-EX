@@ -2,8 +2,9 @@ import {useState, useEffect } from "react"
 import {useWeb3Contract, useMoralis} from "react-moralis"
 import nftabi from "../constants/CCNFT.json"
 import marketplaceabi from "../constants/CCMarketplace.json"
-import {Card} from "web3uikit"
+import {Card, useNotification } from "web3uikit"
 import {ethers} from "ethers"
+import BuyNFT from "./BuyNFT"
 
 
 
@@ -15,8 +16,13 @@ export default function NFTBox(props){
     const[tokenId, setTokenId] = useState("")
     const[quantity, setQuantity] = useState("")
     const[seller, setSeller] = useState("")
+    const[marketAddress, setMarketAddress] = useState("")
+    const[showModal, setShowModal] = useState(false)
+    const hideModal = () => setShowModal(false)
+    
 
     const {isWeb3Enabled} = useMoralis()
+
     const {runContractFunction : getTokenURI} = useWeb3Contract({
         abi: nftabi,
         contractAddress:nftaddr,
@@ -26,12 +32,15 @@ export default function NFTBox(props){
             },
     })
 
+    
+
     async function UpdateUI () {
         const tokenURI = await getTokenURI()
         console.log(props.tokenId)
         setTokenId(props.tokenId)
         setQuantity(props.quantity)
         setSeller(props.seller)
+        setMarketAddress(props.marketAddress)
         console.log(tokenURI)
 
     }
@@ -43,13 +52,24 @@ export default function NFTBox(props){
         }
     }, [isWeb3Enabled] )
 
+    const handleCardClick = () => {
+        setShowModal(true)
+    }
+
     return (
         <div>
             <div>
-                <Card title ={tokenId}>
+                <BuyNFT 
+                    isVisible={showModal}
+                    tokenId={tokenId}
+                    marketplaceAddress={marketAddress}
+                    onClose={hideModal}                    
+                />
+                <Card title ={tokenId} onClick={handleCardClick}>
                     <div>#{tokenId}</div>
                     <div className="itlaic-text-sm"> {seller}</div>
                     <div>Carbon Credit : {quantity}</div>
+                    
                 </Card>
             </div>
         </div>

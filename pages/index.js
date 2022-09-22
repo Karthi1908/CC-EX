@@ -23,16 +23,11 @@ export default function Home() {
     
     {FetchingccListings ? (<div> loading....  </div>) : ccListings.map((cc) => {
         console.log(cc.attributes)
-        const {tokenId, quantity, seller} = cc.attributes
+        const {tokenId, quantity, seller, address} = cc.attributes
         return (
           <div> 
-            Token Id : {tokenId}.
-            quantity : {quantity}.
-            seller : {seller}.
-
-            <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} />
-
-            
+             <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} marketAddress={address}/>
+         
           </div>
         )
 

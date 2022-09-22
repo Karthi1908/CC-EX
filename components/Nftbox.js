@@ -24,8 +24,7 @@ export default function NFTBox(props){
     const[seller, setSeller] = useState("")
     const[marketAddress, setMarketAddress] = useState("")
     const[showModal, setShowModal] = useState(false)
-    const hideModal = () => setShowModal(false)
-    
+    const hideModal = () => setShowModal(false)    
 
     const {isWeb3Enabled} = useMoralis()
     

@@ -13,7 +13,13 @@ export default function Header() {
                 <a className="mr-4 p-6"> Home </a>
             </Link>
             <Link href="/ccHolder">
-                <a className="mr-4 p-6">  CC Holder  </a>
+                <a className="mr-4 p-6"> Holder  </a>
+            </Link>
+            <Link href="/ccHolder">
+                <a className="mr-4 p-6"> Certifier  </a>
+            </Link>
+            <Link href="/apply">
+                <a className="mr-4 p-6"> Apply  </a>
             </Link>
             <ConnectButton moralisAuth={false}/>
         </div>

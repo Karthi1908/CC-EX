@@ -8,20 +8,27 @@ import contracts from "../constants/contracts.json"
 import { useEffect, useState } from "react"
 import  Withdrawal  from "../components/Withdrawal"
 
+const nftport = process.env.NEXT_PUBLIC_NFTPORT_KEY
+
 export default function Home() {
     const { chainId, account, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : "80001"
     console.log(chainId , chainString)
-    const marketplaceAddress = contracts[chainString].NftMarket[0]
+    const certifierAddress = contracts[chainString].Certifier[0]
     const dispatch = useNotification()
     const [proceeds, setProceeds] = useState("0")
+    const [selectedFile, setSelectedFile] = useState();
+	const [isFilePicked, setIsFilePicked] = useState(false);
 
     const { runContractFunction } = useWeb3Contract()
 
-    async function approveAndList(data) {
+    async function applyAndList(data) {
         console.log("Approving...")
-        const nftAddress = data.data[0].inputResult
-        const tokenId = data.data[1].inputResult
+        const projectName = data.data[0].inputResult
+        const projectDetails = data.data[1].inputResult
+        const projectLoc = data.data[2].inputResult
+        const projectIpfs = getIpfsUrl()
+        console.log("IPFS AT APPLY" , projectIpfs)
         
         const approveOptions = {
             abi: nftAbi,
@@ -71,10 +78,52 @@ export default function Home() {
         })
     }
 
+    const handleFileChange = async (event) => {
+        setSelectedFile(event.target.files[0]);
+        console.log( "NFTPORT " )
+        dispatch({
+            type: "success",
+            message: "File Attached ",
+            position: "topR",
+        })
+    }
     
+    function getIpfsUrl  ()  {
+        const form = new FormData();
+        form.append("file", selectedFile);
+
+        const options = {
+            method: 'POST',
+            body : form,
+            headers: {
+                Authorization:'fc93ae18-1d07-425a-b9c2-3f7496b9448f'
+            }
+        };
+
+        
+        fetch('https://api.nftport.xyz/v0/files', options)
+            .then(response => response.json())
+            .then(response => console.log(response.ipfs_url))
+            .catch(err => console.error(err));
+
+        return response.ipfs_url
+    }
 
     async function setupUI() {
-        
+        const returnedProceeds = await runContractFunction({
+            params: {
+                abi: nftMarketplaceAbi,
+                contractAddress: marketplaceAddress,
+                functionName: "getProceeds",
+                params: {
+                    seller: account,
+                },
+            },
+            onError: (error) => console.log(error),
+        })
+        if (returnedProceeds) {
+            setProceeds(returnedProceeds.toString())
+        }
     }
 
     useEffect(() => {
@@ -87,29 +136,40 @@ export default function Home() {
         <div>
         <div className={styles.container}>
             <Form
-                onSubmit={approveAndList}
+                onSubmit={applyAndList}
                 data={[
                     {
-                        name: "NFT Address",
+                        name: "Project Name",
                         type: "text",
                         inputWidth: "35%",
                         value: "",
-                        key: "nftAddress",
+                        key: "pName",
                     },
                     {
-                        name: "Token ID",
-                        type: "number",
+                        name: "Project Details",
+                        type: "text",
                         value: "",
-                        key: "tokenId",
+                        key: "pDetails",
                     },
-
+                    {
+                        name: "Location",
+                        type: "text",
+                        value: "",
+                        key: "pLoc",
+                    },
+                    
                 ]}
-                title="List your NFT!"
+                
+                title="Apply For Carbon Credits"
                 id="Main Form"
             />
+            <div className="form-group mt-3">
+                    <label className="mr-2">Upload Documents for verification</label>
+                    <input name="file" type="file" onChange={handleFileChange}/>
+            </div>
                     
         </div>
-        <Withdrawal />
+        
         </div>
     )
 }

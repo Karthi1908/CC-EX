@@ -15,7 +15,7 @@ export default function Header() {
             <Link href="/ccHolder">
                 <a className="mr-4 p-6"> Holder  </a>
             </Link>
-            <Link href="/ccHolder">
+            <Link href="/certifier">
                 <a className="mr-4 p-6"> Certifier  </a>
             </Link>
             <Link href="/application">

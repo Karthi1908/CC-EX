@@ -3,9 +3,9 @@ import { Form, useNotification, Button } from "web3uikit"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { ethers } from "ethers"
 import nftAbi from "../constants/CCNFT.json"
+import certifierAbi from "../constants/CertiferABI.json"
 import nftMarketplaceAbi from "../constants/CCMarketplace.json"
 import contracts from "../constants/contracts.json"
-import { useEffect, useState } from "react"
 
 
 export default function AssignCertifer () {
@@ -13,36 +13,37 @@ export default function AssignCertifer () {
     const { chainId, account, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : "80001"
     console.log(chainId , chainString)
-    const marketplaceAddress = contracts[chainString].NftMarket[0]
+    const certifierAddress = contracts[chainString].Certifier[0]
     const dispatch = useNotification()
     
 
     const { runContractFunction } = useWeb3Contract()
     
-    async function performWithdrawal(data){
+    async function assign(data){
 
-        const currency = data.data[0].inputResult
-        const amount = data.data[1].inputResult
+        const certifier = data.data[0].inputResult
+        const projectName = data.data[1].inputResult
 
         await runContractFunction({
             params: {
-                abi: nftMarketplaceAbi,
-                contractAddress: marketplaceAddress,
-                functionName: "withdrawProceeds",
+                abi: certifierAbi,
+                contractAddress: certifierAddress,
+                functionName: "assignApplication",
                 params: {
-                    _currency : currency,
-                    _amount: amount
+                    _projectName: projectName,
+                    _certifier: certifier
                 },
             },
+            onSuccess: handleAssignSuccess,
             onError: (error) => console.log(error),
-            onSuccess: handleWithdrawSuccess,
+            
         })
 
-        const handleWithdrawSuccess = async (tx) => {
+        const handleAssignSuccess = async (tx) => {
             await tx.wait(1)
             dispatch({
             type: "success",
-            message: "Withdrawing proceeds",
+            message: "Assignment Successful",
             position: "topR",
             })
         }
@@ -52,24 +53,24 @@ export default function AssignCertifer () {
         <div className={styles.container}>
             
             <Form 
-                onSubmit={performWithdrawal}
+                onSubmit={assign}
                 data={[
                     {
-                        name: "Currency",
+                        name: "Certifier Wallet Address",
                         type: "text",
                         value: "",
-                        key: "currency",
+                        key: "certifier",
                     },
                     {
-                        name: "Amount",
-                        type: "number",
+                        name: "Project Name",
+                        type: "text",
                         value: "",
-                        key: "amount",
+                        key: "project",
                     },
 
                 ]}
-                title="Withdraw your Proceeds!"
-                id="Withdrawal Form"
+                title="Assign Certifier to project"
+                id="Assignment Form"
             />
         </div>
     )   

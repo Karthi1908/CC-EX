@@ -1,8 +1,8 @@
 import Head from 'next/head'
-import {React} from 'react'
+import { useEffect, useState } from "react"
 //import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import { useMoralisQuery } from "react-moralis"
+import { useMoralis, useWeb3Contract } from "react-moralis"
 import  AddCertifier  from "../components/AddCertifier"
 import  ApproveApplication  from "../components/ApproveApplication"
 import  AssignCertifer  from "../components/AssignCertifier"
@@ -10,6 +10,20 @@ import  AssignCertifer  from "../components/AssignCertifier"
 
 
 export default function Home() {
+
+    const { chainId, account, isWeb3Enabled } = useMoralis()
+    const chainString = chainId ? parseInt(chainId).toString() : "80001"
+    console.log(chainId , chainString)
+
+    async function setupUI() {
+        
+    }
+
+    useEffect(() => {
+        if(isWeb3Enabled){
+            setupUI()
+        }
+    }, [account, isWeb3Enabled, chainId])
 
    
   return (

@@ -13,6 +13,7 @@ export default function Home() {
     const chainString = chainId ? parseInt(chainId).toString() : "80001"
     console.log(chainId , chainString)
     const marketplaceAddress = contracts[chainString].NftMarket[0]
+    
     const dispatch = useNotification()
     const [proceeds, setProceeds] = useState("0")
 
@@ -35,14 +36,14 @@ export default function Home() {
 
         await runContractFunction({
             params: approveOptions,
-            onSuccess: () => handleApproveSuccess(nftAddress, tokenId, price),
+            onSuccess: () => handleApproveSuccess(tokenId),
             onError: (error) => {
                 console.log(error)
             },
         })
     }
 
-    async function handleApproveSuccess(nftAddress, tokenId, price) {
+    async function handleApproveSuccess(tokenId) {
         console.log("Ok! Now time to list")
         
         const listOptions = {

@@ -3,9 +3,9 @@ import { Form, useNotification, Button } from "web3uikit"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { ethers } from "ethers"
 import nftAbi from "../constants/CCNFT.json"
+import certifierAbi from "../constants/CertiferABI.json"
 import nftMarketplaceAbi from "../constants/CCMarketplace.json"
 import contracts from "../constants/contracts.json"
-import { useEffect, useState } from "react"
 
 
 export default function AddCertifier () {
@@ -13,36 +13,36 @@ export default function AddCertifier () {
     const { chainId, account, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : "80001"
     console.log(chainId , chainString)
-    const marketplaceAddress = contracts[chainString].NftMarket[0]
+    const certifierAddress = contracts[chainString].Certifier[0]
     const dispatch = useNotification()
     
 
     const { runContractFunction } = useWeb3Contract()
     
-    async function performWithdrawal(data){
+    async function addCertifier(data){
 
-        const currency = data.data[0].inputResult
-        const amount = data.data[1].inputResult
+        const company = data.data[0].inputResult
+        
 
         await runContractFunction({
             params: {
-                abi: nftMarketplaceAbi,
-                contractAddress: marketplaceAddress,
-                functionName: "withdrawProceeds",
+                abi: certifierAbi,
+                contractAddress: certifierAddress,
+                functionName: "addApprover",
                 params: {
-                    _currency : currency,
-                    _amount: amount
+                    _company:company
                 },
             },
+            onSuccess: addCertifierSucess,
             onError: (error) => console.log(error),
-            onSuccess: handleWithdrawSuccess,
+            
         })
 
-        const handleWithdrawSuccess = async (tx) => {
-            await tx.wait(1)
+        const addCertifierSucess = async () => {
+            
             dispatch({
             type: "success",
-            message: "Withdrawing proceeds",
+            message: "Certifier Enrolled Scucessfully",
             position: "topR",
             })
         }
@@ -52,24 +52,19 @@ export default function AddCertifier () {
         <div className={styles.container}>
             
             <Form 
-                onSubmit={performWithdrawal}
+                onSubmit={addCertifier}
                 data={[
                     {
-                        name: "Currency",
+                        name: "Enter your Company Name",
                         type: "text",
                         value: "",
-                        key: "currency",
+                        key: "company",
                     },
-                    {
-                        name: "Amount",
-                        type: "number",
-                        value: "",
-                        key: "amount",
-                    },
+                    
 
                 ]}
-                title="Withdraw your Proceeds!"
-                id="Withdrawal Form"
+                title="Enroll as a Certifier!"
+                id="Enroll Form"
             />
         </div>
     )   

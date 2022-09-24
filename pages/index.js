@@ -4,6 +4,7 @@ import {React} from 'react'
 import styles from '../styles/Home.module.css'
 import { useMoralisQuery } from "react-moralis"
 import  NFTBox  from "../components/NFTBox"
+import {Card, useNotification, NFT, NFTBalance} from "web3uikit"
 
 
 
@@ -29,6 +30,13 @@ export default function Home() {
                 return (
                       <div> 
                         <NFTBox tokenId={tokenId} quantity={quantity} seller={seller} marketAddress={address}/>
+                        
+                        <NFT
+                            address="0x8318E2B7F120F44FeA59A3394E9E5857FdAb16DE"
+                            chain="Mumbai"
+                            fetchMetadata
+                            tokenId={tokenId}
+                          />
          
                       </div>
                   )

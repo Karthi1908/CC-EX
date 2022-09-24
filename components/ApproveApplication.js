@@ -3,9 +3,9 @@ import { Form, useNotification, Button } from "web3uikit"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { ethers } from "ethers"
 import nftAbi from "../constants/CCNFT.json"
+import certifierAbi from "../constants/CertiferABI.json"
 import nftMarketplaceAbi from "../constants/CCMarketplace.json"
 import contracts from "../constants/contracts.json"
-import { useEffect, useState } from "react"
 
 
 export default function ApproveApplication () {
@@ -13,36 +13,42 @@ export default function ApproveApplication () {
     const { chainId, account, isWeb3Enabled } = useMoralis()
     const chainString = chainId ? parseInt(chainId).toString() : "80001"
     console.log(chainId , chainString)
-    const marketplaceAddress = contracts[chainString].NftMarket[0]
+    const certifierAddress = contracts[chainString].Certifier[0]
     const dispatch = useNotification()
     
 
     const { runContractFunction } = useWeb3Contract()
     
-    async function performWithdrawal(data){
-
-        const currency = data.data[0].inputResult
-        const amount = data.data[1].inputResult
+    async function applicationResult(data){
+        let cdecision = 2
+        const projectName = data.data[0].inputResult
+        const decision = data.data[1].inputResult
+        if (decision == 'Rejected'){
+            cdecision = 3
+        }
+        const carbonCredits = data.data[2].inputResult
 
         await runContractFunction({
             params: {
-                abi: nftMarketplaceAbi,
-                contractAddress: marketplaceAddress,
-                functionName: "withdrawProceeds",
+                abi: certifierAbi,
+                contractAddress: certifierAddress,
+                functionName: "applicationDecision",
                 params: {
-                    _currency : currency,
-                    _amount: amount
+                    _projectName: projectName,
+                    _status: cdecision,
+                    _creditsIssued: carbonCredits
                 },
             },
+            onSuccess: applicationDecision,
             onError: (error) => console.log(error),
-            onSuccess: handleWithdrawSuccess,
+            
         })
 
-        const handleWithdrawSuccess = async (tx) => {
-            await tx.wait(1)
+        const applicationDecision = async () => {
+            
             dispatch({
             type: "success",
-            message: "Withdrawing proceeds",
+            message: "Application - Decision is made",
             position: "topR",
             })
         }
@@ -52,24 +58,30 @@ export default function ApproveApplication () {
         <div className={styles.container}>
             
             <Form 
-                onSubmit={performWithdrawal}
+                onSubmit={applicationResult}
                 data={[
                     {
-                        name: "Currency",
+                        name: "Project Name",
                         type: "text",
                         value: "",
-                        key: "currency",
+                        key: "projectName",
                     },
                     {
-                        name: "Amount",
+                        name: "Application Decision : Accepted/Rejected",
+                        type: "text",
+                        value: "",
+                        key: "decision",
+                    },
+                    {
+                        name: "Carbon Credits Awarded",
                         type: "number",
                         value: "",
-                        key: "amount",
+                        key: "carbonCredits",
                     },
 
                 ]}
-                title="Withdraw your Proceeds!"
-                id="Withdrawal Form"
+                title="Application Approval"
+                id="Approve Application"
             />
         </div>
     )   

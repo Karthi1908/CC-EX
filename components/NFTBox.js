@@ -2,10 +2,11 @@ import {useState, useEffect } from "react"
 import {useWeb3Contract, useMoralis} from "react-moralis"
 import nftabi from "../constants/CCNFT.json"
 import marketplaceabi from "../constants/CCMarketplace.json"
-import {Card, useNotification } from "web3uikit"
+import {Card, useNotification, NFT, NFTBalance} from "web3uikit"
 import {ethers} from "ethers"
 import BuyNFT from "./BuyNFT"
 import contracts from "../constants/contracts.json"
+const tokenIdtext = ""
 
 
 
@@ -71,7 +72,7 @@ export default function NFTBox(props){
 
     return (
         <div>
-            <div>
+              <div>
                 <BuyNFT 
                     isVisible={showModal}
                     tokenId={tokenId}
@@ -79,15 +80,22 @@ export default function NFTBox(props){
                     onClose={hideModal}                    
                 />
                 <div className="p-5">
+
                     <div className="flex flex-col items-end gap-5"></div>
-                        <Card title ={tokenId} onClick={handleCardClick}>
+                    
+                    <Card title ={tokenId} onClick={handleCardClick}>
+                            
                             <div>#{tokenId}</div>
-                            <div className="itlaic-text-sm"> {seller}</div>
-                            <div>Carbon Credit : {quantity}</div>
+                            <div> Mini C-Credits Available : {quantity}</div>
 
                         </Card>
+                        
+                        
+                        
                 </div>
+                
             </div>
+
         </div>
     )
 

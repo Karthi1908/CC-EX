@@ -52,7 +52,7 @@ export default function BuyNFT({
             <Input
                 label="Enter Currency"
                 name="Currency/token"
-                type="sting"
+                type="string"
                 onChange={(event) => {
                     setCurrency(event.target.value)
                 }}
@@ -60,7 +60,7 @@ export default function BuyNFT({
             <Input
                 label="Enter Amount"
                 name="Amount"
-                type="sting"
+                type="string"
                 onChange={(event) => {
                     setAmount(event.target.value)
                 }}

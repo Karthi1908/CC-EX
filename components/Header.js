@@ -18,7 +18,7 @@ export default function Header() {
             <Link href="/ccHolder">
                 <a className="mr-4 p-6"> Certifier  </a>
             </Link>
-            <Link href="/apply">
+            <Link href="/application">
                 <a className="mr-4 p-6"> Apply  </a>
             </Link>
             <ConnectButton moralisAuth={false}/>

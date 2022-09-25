@@ -76,7 +76,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         uint256 amount
     );
 
-    event WithdrawProceeds(
+    event Withdrawls(
         address indexed user,
         string indexed currency,
         uint256 amount        
@@ -141,6 +141,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
 
         miniCC.mint(msg.sender, _tokenId, _quantity , '');
         emit MiniCCMinted(msg.sender, _tokenId, _quantity, _currency, amountToBePaid);
+        emit CCListed(msg.sender, _tokenId, creditDetails[_tokenId].quantity );
 
     }
 
@@ -171,6 +172,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
         }
 
         emit MiniCCMinted(msg.sender, _tokenId, miniCarbonQuantity, _currency, _amount);
+        emit CCListed(msg.sender, _tokenId, creditDetails[_tokenId].quantity );
 
     }
 
@@ -193,6 +195,7 @@ contract CCMarketplace is ERC721Holder, ReentrancyGuard, Ownable{
             IERC20(tokenList[_currency]).transfer(msg.sender, _amount);
 
         }
+        emit Withdrawls(msg.sender , _currency, _amount);
 
     }
 

@@ -7,10 +7,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 contract MiniCC is ERC1155, ERC1155Burnable, Ownable, ERC1155Supply {
-    constructor() ERC1155("") {}
+    constructor() ERC1155("https://ipfs.io/ipfs/bafkreigrx76uqqu26hogpsxnylsq5lolnsvpwjuq4qz2peqwvmkvfzils4") {}
 
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
         public
+        onlyOwner
         
     {
         _mint(account, id, amount, data);
